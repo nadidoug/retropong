@@ -2,6 +2,14 @@
 
 A single-file HTML5 Canvas Pong prototype with a black OLED background, glassy neon glow, touch-friendly paddle control, and a CPU opponent that gets harder as rallies build.
 
+## Play On iPhone
+
+Open this link on your iPhone:
+
+[Play Retro Glow Pong](https://nadidoug.github.io/retropong/)
+
+If you are using iPhone Safari or iPhone Chrome, the game will ask you to rotate into landscape before play.
+
 ## Play
 
 Open `index.html` in a browser.
