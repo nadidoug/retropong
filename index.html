@@ -9,13 +9,15 @@
     html, body { width:100%; height:100%; margin:0; overflow:hidden; background:#000; color:white; font-family:Arial, Helvetica, sans-serif; touch-action:none; overscroll-behavior:none; user-select:none; }
     body { display:grid; place-items:center; }
     canvas { position:fixed; inset:0; display:block; width:100dvw; height:100dvh; background:#000; touch-action:none; }
+    .sound-button { position:fixed; left:50%; top:max(14px, env(safe-area-inset-top)); transform:translateX(-50%); z-index:20; width:auto; min-width:190px; padding:12px 16px; border:1px solid rgba(74,255,231,.7); border-radius:999px; background:rgba(0,0,0,.82); color:white; box-shadow:0 0 24px rgba(74,255,231,.35); font-weight:900; letter-spacing:.04em; }
+    .sound-button.is-hidden { display:none; }
     .rotate-screen { position:fixed; inset:0; z-index:5; display:none; place-items:center; padding:22px; background:radial-gradient(circle at 50% 42%, rgba(74,255,231,.18), transparent 18rem), #000; text-align:center; }
     .rotate-screen.is-visible { display:grid; }
     .rotate-card { max-width:330px; }
     .rotate-card strong { display:block; font-size:1.75rem; text-shadow:0 0 22px rgba(74,255,231,.9); }
     .rotate-card span { display:block; margin-top:12px; color:rgba(255,255,255,.68); font-size:.95rem; font-weight:700; line-height:1.35; }
     .phone-icon { width:74px; height:118px; margin:0 auto 22px; border:4px solid rgba(255,255,255,.88); border-radius:18px; box-shadow:0 0 24px rgba(74,255,231,.72), inset 0 0 20px rgba(255,76,205,.22); transform:rotate(90deg); }
-    .panel { position:fixed; right:max(14px, env(safe-area-inset-right)); top:max(14px, env(safe-area-inset-top)); z-index:3; width:min(320px, calc(100vw - 28px)); max-height:calc(100dvh - 28px); overflow:auto; padding:14px; border:1px solid rgba(74,255,231,.42); border-radius:18px; background:rgba(0,0,0,.72); box-shadow:0 0 28px rgba(74,255,231,.18); backdrop-filter:blur(10px); }
+    .panel { position:fixed; right:max(14px, env(safe-area-inset-right)); top:max(62px, env(safe-area-inset-top)); z-index:3; width:min(320px, calc(100vw - 28px)); max-height:calc(100dvh - 76px); overflow:auto; padding:14px; border:1px solid rgba(74,255,231,.42); border-radius:18px; background:rgba(0,0,0,.72); box-shadow:0 0 28px rgba(74,255,231,.18); backdrop-filter:blur(10px); }
     .panel h2 { margin:0 0 8px; font-size:16px; letter-spacing:.08em; text-transform:uppercase; }
     .leader-row { display:grid; grid-template-columns:28px 1fr auto; gap:8px; padding:7px 0; border-top:1px solid rgba(255,255,255,.12); font-size:13px; }
     .leader-meta { grid-column:2 / 4; color:rgba(255,255,255,.62); font-size:11px; }
@@ -32,6 +34,7 @@
 </head>
 <body>
   <canvas id="game"></canvas>
+  <button class="sound-button" id="soundButton">Tap to Enable Sound</button>
   <aside class="panel" aria-label="Leaderboard">
     <h2>Leaderboard</h2>
     <div id="leaderboard" class="empty">Loading leaderboard...</div>
@@ -52,13 +55,14 @@ const WINNING_SCORE = 10;
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const rotateScreen = document.getElementById("rotateScreen");
+const soundButton = document.getElementById("soundButton");
 const submitPanel = document.getElementById("submitPanel");
 const finalScoreText = document.getElementById("finalScoreText");
 const displayNameInput = document.getElementById("displayName");
 const submitStatus = document.getElementById("submitStatus");
 const leaderboardEl = document.getElementById("leaderboard");
 let width = 0, height = 0, deviceScale = 1, shouldShowRotatePrompt = false;
-let audioCtx = null;
+let audioCtx = null, soundEnabled = false;
 const userAgent = navigator.userAgent || "";
 const isIPhone = /iPhone/i.test(userAgent);
 const isAppleChrome = /CriOS/i.test(userAgent);
@@ -70,14 +74,16 @@ const ball = { x:0, y:0, radius:8, vx:4, vy:2.2, speed:4.5 };
 const game = { rally:0, flash:0, message:"RETRO GLOW PONG", lastTime:0, over:false, wins:0, losses:0, lastScore:0 };
 const REFERENCE_WIDTH = 441;
 function getAudioContext(){ if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } if(audioCtx.state === "suspended") audioCtx.resume(); return audioCtx; }
-function playTone(freq, duration, type, volume){ const ac = getAudioContext(); const osc = ac.createOscillator(); const gain = ac.createGain(); osc.type = type; osc.frequency.setValueAtTime(freq, ac.currentTime); gain.gain.setValueAtTime(volume, ac.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + duration); osc.connect(gain); gain.connect(ac.destination); osc.start(); osc.stop(ac.currentTime + duration); }
-function playPaddleSound(){ playTone(92, 0.055, "triangle", 0.22); setTimeout(()=>playTone(138, 0.035, "sine", 0.08), 18); }
-function playScoreSound(){ playTone(62, 0.18, "sawtooth", 0.18); setTimeout(()=>playTone(124, 0.12, "triangle", 0.12), 80); }
-function unlockAudio(){ try { getAudioContext(); } catch(err) {} }
+function playTone(freq, duration, type, volume){ if(!soundEnabled) return; const ac = getAudioContext(); const osc = ac.createOscillator(); const gain = ac.createGain(); osc.type = type; osc.frequency.setValueAtTime(freq, ac.currentTime); gain.gain.setValueAtTime(volume, ac.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + duration); osc.connect(gain); gain.connect(ac.destination); osc.start(ac.currentTime); osc.stop(ac.currentTime + duration); }
+function enableSound(){ try{ soundEnabled = true; getAudioContext(); soundButton.classList.add("is-hidden"); playTone(440, .08, "sine", .35); setTimeout(()=>playTone(660, .08, "sine", .28), 90); }catch(err){ soundButton.textContent = "Sound blocked — tap again"; } }
+function playPaddleSound(){ playTone(120, 0.07, "triangle", 0.42); setTimeout(()=>playTone(180, 0.04, "sine", 0.18), 20); }
+function playScoreSound(){ playTone(72, 0.22, "sawtooth", 0.32); setTimeout(()=>playTone(144, 0.14, "triangle", 0.22), 85); }
 function resizeCanvas(){ deviceScale=Math.min(window.devicePixelRatio||1,2); width=Math.floor(window.visualViewport?window.visualViewport.width:window.innerWidth); height=Math.floor(window.visualViewport?window.visualViewport.height:window.innerHeight); shouldShowRotatePrompt=shouldEnforceLandscape&&width<height; rotateScreen.classList.toggle("is-visible", shouldShowRotatePrompt); canvas.width=Math.floor(width*deviceScale); canvas.height=Math.floor(height*deviceScale); canvas.style.width=width+"px"; canvas.style.height=height+"px"; ctx.setTransform(deviceScale,0,0,deviceScale,0,0); player.x=Math.max(18,width*.06); cpu.x=width-player.x-cpu.width; player.height=Math.max(76,Math.min(116,height*.16)); cpu.height=player.height; if(player.y===0){ player.y=height/2-player.height/2; cpu.y=height/2-cpu.height/2;} clampPaddles(); }
-function movePlayerTo(screenY){ unlockAudio(); if(game.over) return; player.y=screenY-player.height/2; clampPaddles(); }
+function movePlayerTo(screenY){ if(game.over) return; player.y=screenY-player.height/2; clampPaddles(); }
+soundButton.addEventListener("touchend", e=>{ e.preventDefault(); enableSound(); }, {passive:false});
+soundButton.addEventListener("click", enableSound);
 canvas.addEventListener("mousemove", e=>movePlayerTo(e.clientY));
-canvas.addEventListener("touchstart", e=>{ e.preventDefault(); unlockAudio(); if(e.touches.length) movePlayerTo(e.touches[0].clientY); }, {passive:false});
+canvas.addEventListener("touchstart", e=>{ e.preventDefault(); if(e.touches.length) movePlayerTo(e.touches[0].clientY); }, {passive:false});
 canvas.addEventListener("touchmove", e=>{ e.preventDefault(); if(e.touches.length) movePlayerTo(e.touches[0].clientY); }, {passive:false});
 function resetBall(direction){ ball.x=width/2; ball.y=height/2; ball.speed=startingBallSpeed(); ball.vx=direction*ball.speed; ball.vy=(Math.random()*2-1)*ball.speed*.65; game.rally=0; }
 function resetGame(){ player.score=0; cpu.score=0; game.over=false; submitPanel.classList.remove("is-visible"); player.y=height/2-player.height/2; cpu.y=height/2-cpu.height/2; resetBall(Math.random()>.5?1:-1); }
@@ -100,7 +106,7 @@ async function loadLeaderboard(){ try{ const res=await fetch("leaderboard.json?c
 function escapeHtml(value){ return String(value).replace(/[&<>'"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c])); }
 function submitScore(){ const displayName=displayNameInput.value.trim(); if(!displayName){ submitStatus.textContent="Enter a display name first."; return; } const timestamp=new Date().toISOString(); const title=`Score Submission: ${displayName}`; const body=[`displayName: ${displayName}`,`score: ${game.lastScore}`,`wins: ${game.wins}`,`losses: ${game.losses}`,`timestamp: ${timestamp}`].join("%0A"); const url=`https://github.com/${REPO_OWNER}/${REPO_NAME}/issues/new?title=${encodeURIComponent(title)}&body=${body}&labels=score-submission`; window.open(url,"_blank","noopener,noreferrer"); submitStatus.textContent="Score opened as a GitHub Issue. It is pending approval."; }
 document.getElementById("submitScoreBtn").addEventListener("click",submitScore);
-window.addEventListener("keydown", e=>{ unlockAudio(); if(e.key.toLowerCase()==="r") resetGame(); });
+window.addEventListener("keydown", e=>{ if(e.key.toLowerCase()==="r") resetGame(); });
 window.addEventListener("resize",resizeCanvas); window.addEventListener("orientationchange",resizeCanvas); if(window.visualViewport) window.visualViewport.addEventListener("resize",resizeCanvas);
 resizeCanvas(); resetGame(); loadLeaderboard(); requestAnimationFrame(gameLoop);
 </script>
