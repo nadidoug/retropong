@@ -9,8 +9,8 @@
     html, body { width:100%; height:100%; margin:0; overflow:hidden; background:#000; color:white; font-family:Arial, Helvetica, sans-serif; touch-action:none; overscroll-behavior:none; user-select:none; }
     body { display:grid; place-items:center; }
     canvas { position:fixed; inset:0; display:block; width:100dvw; height:100dvh; background:#000; touch-action:none; }
-    .sound-button { position:fixed; left:50%; top:max(14px, env(safe-area-inset-top)); transform:translateX(-50%); z-index:20; width:auto; min-width:190px; padding:12px 16px; border:1px solid rgba(74,255,231,.7); border-radius:999px; background:rgba(0,0,0,.82); color:white; box-shadow:0 0 24px rgba(74,255,231,.35); font-weight:900; letter-spacing:.04em; }
-    .sound-button.is-hidden { display:none; }
+    .sound-button { position:fixed; left:12px; top:12px; z-index:9999; width:auto; min-width:150px; padding:12px 14px; border:2px solid #fff; border-radius:999px; background:#111; color:#fff; box-shadow:0 0 24px rgba(74,255,231,.65); font-weight:900; letter-spacing:.04em; font-size:14px; }
+    .sound-button.is-on { background:#fff; color:#000; border-color:#7fffe9; }
     .rotate-screen { position:fixed; inset:0; z-index:5; display:none; place-items:center; padding:22px; background:radial-gradient(circle at 50% 42%, rgba(74,255,231,.18), transparent 18rem), #000; text-align:center; }
     .rotate-screen.is-visible { display:grid; }
     .rotate-card { max-width:330px; }
@@ -26,15 +26,15 @@
     .submit-panel.is-visible { display:block; }
     .submit-panel h2 { margin:0 0 8px; font-size:16px; }
     .submit-panel p { margin:0 0 10px; color:rgba(255,255,255,.68); font-size:13px; }
-    input, button { width:100%; border:0; border-radius:12px; padding:12px; font-weight:700; }
-    input { margin-bottom:8px; background:rgba(255,255,255,.12); color:#fff; outline:1px solid rgba(255,255,255,.16); }
-    button { cursor:pointer; background:#fff; color:#000; }
+    input, button { border-radius:12px; padding:12px; font-weight:700; }
+    input { width:100%; border:0; margin-bottom:8px; background:rgba(255,255,255,.12); color:#fff; outline:1px solid rgba(255,255,255,.16); }
+    .submit-panel button { width:100%; border:0; cursor:pointer; background:#fff; color:#000; }
     .status { margin-top:8px; color:rgba(74,255,231,.9); font-size:12px; font-weight:700; }
   </style>
 </head>
 <body>
   <canvas id="game"></canvas>
-  <button class="sound-button" id="soundButton">Tap to Enable Sound</button>
+  <button class="sound-button" id="soundButton">🔊 Sound Off</button>
   <aside class="panel" aria-label="Leaderboard">
     <h2>Leaderboard</h2>
     <div id="leaderboard" class="empty">Loading leaderboard...</div>
@@ -75,12 +75,12 @@ const game = { rally:0, flash:0, message:"RETRO GLOW PONG", lastTime:0, over:fal
 const REFERENCE_WIDTH = 441;
 function getAudioContext(){ if(!audioCtx){ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } if(audioCtx.state === "suspended") audioCtx.resume(); return audioCtx; }
 function playTone(freq, duration, type, volume){ if(!soundEnabled) return; const ac = getAudioContext(); const osc = ac.createOscillator(); const gain = ac.createGain(); osc.type = type; osc.frequency.setValueAtTime(freq, ac.currentTime); gain.gain.setValueAtTime(volume, ac.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + duration); osc.connect(gain); gain.connect(ac.destination); osc.start(ac.currentTime); osc.stop(ac.currentTime + duration); }
-function enableSound(){ try{ soundEnabled = true; getAudioContext(); soundButton.classList.add("is-hidden"); playTone(440, .08, "sine", .35); setTimeout(()=>playTone(660, .08, "sine", .28), 90); }catch(err){ soundButton.textContent = "Sound blocked — tap again"; } }
+function enableSound(){ try{ soundEnabled = true; getAudioContext(); soundButton.textContent = "🔊 Sound On"; soundButton.classList.add("is-on"); playTone(440, .10, "sine", .45); setTimeout(()=>playTone(660, .10, "sine", .38), 110); }catch(err){ soundButton.textContent = "Tap Again"; } }
 function playPaddleSound(){ playTone(120, 0.07, "triangle", 0.42); setTimeout(()=>playTone(180, 0.04, "sine", 0.18), 20); }
 function playScoreSound(){ playTone(72, 0.22, "sawtooth", 0.32); setTimeout(()=>playTone(144, 0.14, "triangle", 0.22), 85); }
 function resizeCanvas(){ deviceScale=Math.min(window.devicePixelRatio||1,2); width=Math.floor(window.visualViewport?window.visualViewport.width:window.innerWidth); height=Math.floor(window.visualViewport?window.visualViewport.height:window.innerHeight); shouldShowRotatePrompt=shouldEnforceLandscape&&width<height; rotateScreen.classList.toggle("is-visible", shouldShowRotatePrompt); canvas.width=Math.floor(width*deviceScale); canvas.height=Math.floor(height*deviceScale); canvas.style.width=width+"px"; canvas.style.height=height+"px"; ctx.setTransform(deviceScale,0,0,deviceScale,0,0); player.x=Math.max(18,width*.06); cpu.x=width-player.x-cpu.width; player.height=Math.max(76,Math.min(116,height*.16)); cpu.height=player.height; if(player.y===0){ player.y=height/2-player.height/2; cpu.y=height/2-cpu.height/2;} clampPaddles(); }
 function movePlayerTo(screenY){ if(game.over) return; player.y=screenY-player.height/2; clampPaddles(); }
-soundButton.addEventListener("touchend", e=>{ e.preventDefault(); enableSound(); }, {passive:false});
+soundButton.addEventListener("touchstart", e=>{ e.preventDefault(); enableSound(); }, {passive:false});
 soundButton.addEventListener("click", enableSound);
 canvas.addEventListener("mousemove", e=>movePlayerTo(e.clientY));
 canvas.addEventListener("touchstart", e=>{ e.preventDefault(); if(e.touches.length) movePlayerTo(e.touches[0].clientY); }, {passive:false});
