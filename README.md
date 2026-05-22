@@ -1,52 +1,75 @@
 # Retro Glow Pong
 
-A single-file HTML5 Canvas Pong prototype with a black OLED background, glassy neon glow, touch-friendly paddle control, and a CPU opponent that gets harder as rallies build.
+A single-file HTML5 Canvas Pong game with glow visuals, mobile paddle control, sound effects, score submission, and a public leaderboard file.
 
-## Play On iPhone
+## Important: GitHub Pages Setup
 
-Open this link on your iPhone:
+The game file is:
 
-[Play Retro Glow Pong](https://nadidoug.github.io/retropong/)
+`index.html`
 
-If you are using iPhone Safari or iPhone Chrome, the game will ask you to rotate into landscape before play.
+The leaderboard file is:
 
-## Play
+`leaderboard.json`
 
-Open `index.html` in a browser.
+The live GitHub Pages link should be:
 
-For local testing with a tiny static server:
+https://nadidoug.github.io/retropong/
 
-```bash
-npx serve .
-```
+If that link gives a 404, GitHub Pages is not currently publishing this repository from the expected source. Go to:
 
-Then open the local URL shown in the terminal.
+`Settings → Pages`
 
-## Controls
+Then set:
 
-- Desktop: move the mouse vertically to control the left paddle.
-- Mobile: drag a finger vertically to control the left paddle.
+- Source: `Deploy from a branch`
+- Branch: `main`
+- Folder: `/root`
+
+After saving, wait for the Pages deployment to finish.
+
+## Cache-Busting Test Link
+
+After Pages is enabled, open:
+
+https://nadidoug.github.io/retropong/?v=leaderboard-sound-main
 
 ## Current Features
 
-- Full-screen HTML5 Canvas
-- iPhone landscape play with portrait rotation prompt
+- Full-screen HTML5 Canvas Pong
+- iPhone landscape prompt
 - Player paddle
 - CPU paddle
-- Glowing ball physics
-- Paddle and wall collision
-- Scoreboard
-- Reset after score
-- Rally-based ball speed increase
-- Width-relative ball timing for wide iPhone landscape screens
-- CPU difficulty rises with score and rally length
+- Paddle hit sound
+- Score sound
+- Visible sound toggle button
+- Public leaderboard panel
+- Score submission form
+- GitHub Issue score inbox
+- `leaderboard.json` for approved scores
+
+## iPhone Sound
+
+Tap the top-left button:
+
+`🔊 Sound Off`
+
+It should change to:
+
+`🔊 Sound On`
+
+You should hear two confirmation beeps.
+
+## Controls
+
+- Desktop: move the mouse vertically.
+- Mobile: drag a finger vertically.
 
 ## Files
 
-- `index.html`: complete playable game, including CSS and JavaScript
-- `brand-kit/`: logos, palette, and simple share graphics
-- `docs/TESTING.md`: quick smoke-test checklist
+- `index.html` — complete playable game, including CSS and JavaScript.
+- `leaderboard.json` — public leaderboard data.
 
-## Scope
+## Status Note
 
-This is intentionally a first playable prototype. It has no backend, accounts, store, leaderboard, menus, or external libraries.
+If GitHub shows code changes but the live link still shows the old game or returns 404, the issue is the GitHub Pages publishing source, not the game code.
