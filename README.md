@@ -2,6 +2,14 @@
 
 Timed arcade mode.
 
+## Play Live
+
+https://nadidoug.github.io/retropong/
+
+Cache refresh version:
+
+https://nadidoug.github.io/retropong/?v=timed-mode
+
 ## Gameplay Flow
 
 1. Start game
