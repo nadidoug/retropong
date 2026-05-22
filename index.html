@@ -5,498 +5,98 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Retro Glow Pong Prototype</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      overflow: hidden;
-      background: #000;
-      color: white;
-      font-family: Arial, Helvetica, sans-serif;
-      touch-action: none;
-      overscroll-behavior: none;
-      user-select: none;
-    }
-
-    body {
-      display: grid;
-      place-items: center;
-    }
-
-    canvas {
-      position: fixed;
-      inset: 0;
-      display: block;
-      width: 100dvw;
-      height: 100dvh;
-      background: #000;
-      touch-action: none;
-    }
-
-    .rotate-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 5;
-      display: none;
-      place-items: center;
-      padding: max(22px, env(safe-area-inset-top)) max(22px, env(safe-area-inset-right)) max(22px, env(safe-area-inset-bottom)) max(22px, env(safe-area-inset-left));
-      background:
-        radial-gradient(circle at 50% 42%, rgba(74, 255, 231, 0.18), transparent 18rem),
-        #000;
-      text-align: center;
-    }
-
-    .rotate-card {
-      max-width: 330px;
-    }
-
-    .rotate-card strong {
-      display: block;
-      color: white;
-      font-size: 1.75rem;
-      line-height: 1;
-      text-shadow: 0 0 22px rgba(74, 255, 231, 0.9);
-    }
-
-    .rotate-card span {
-      display: block;
-      margin-top: 12px;
-      color: rgba(255, 255, 255, 0.68);
-      font-size: 0.95rem;
-      font-weight: 700;
-      line-height: 1.35;
-    }
-
-    .phone-icon {
-      width: 74px;
-      height: 118px;
-      margin: 0 auto 22px;
-      border: 4px solid rgba(255, 255, 255, 0.88);
-      border-radius: 18px;
-      box-shadow:
-        0 0 24px rgba(74, 255, 231, 0.72),
-        inset 0 0 20px rgba(255, 76, 205, 0.22);
-      transform: rotate(90deg);
-    }
-
-    .rotate-screen.is-visible {
-      display: grid;
-    }
+    * { box-sizing: border-box; }
+    html, body { width:100%; height:100%; margin:0; overflow:hidden; background:#000; color:white; font-family:Arial, Helvetica, sans-serif; touch-action:none; overscroll-behavior:none; user-select:none; }
+    body { display:grid; place-items:center; }
+    canvas { position:fixed; inset:0; display:block; width:100dvw; height:100dvh; background:#000; touch-action:none; }
+    .rotate-screen { position:fixed; inset:0; z-index:5; display:none; place-items:center; padding:22px; background:radial-gradient(circle at 50% 42%, rgba(74,255,231,.18), transparent 18rem), #000; text-align:center; }
+    .rotate-screen.is-visible { display:grid; }
+    .rotate-card { max-width:330px; }
+    .rotate-card strong { display:block; font-size:1.75rem; text-shadow:0 0 22px rgba(74,255,231,.9); }
+    .rotate-card span { display:block; margin-top:12px; color:rgba(255,255,255,.68); font-size:.95rem; font-weight:700; line-height:1.35; }
+    .phone-icon { width:74px; height:118px; margin:0 auto 22px; border:4px solid rgba(255,255,255,.88); border-radius:18px; box-shadow:0 0 24px rgba(74,255,231,.72), inset 0 0 20px rgba(255,76,205,.22); transform:rotate(90deg); }
+    .panel { position:fixed; right:max(14px, env(safe-area-inset-right)); top:max(14px, env(safe-area-inset-top)); z-index:3; width:min(320px, calc(100vw - 28px)); max-height:calc(100dvh - 28px); overflow:auto; padding:14px; border:1px solid rgba(74,255,231,.42); border-radius:18px; background:rgba(0,0,0,.72); box-shadow:0 0 28px rgba(74,255,231,.18); backdrop-filter:blur(10px); }
+    .panel h2 { margin:0 0 8px; font-size:16px; letter-spacing:.08em; text-transform:uppercase; }
+    .leader-row { display:grid; grid-template-columns:28px 1fr auto; gap:8px; padding:7px 0; border-top:1px solid rgba(255,255,255,.12); font-size:13px; }
+    .leader-meta { grid-column:2 / 4; color:rgba(255,255,255,.62); font-size:11px; }
+    .empty { color:rgba(255,255,255,.65); font-size:13px; }
+    .submit-panel { position:fixed; left:50%; bottom:max(16px, env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:4; width:min(420px, calc(100vw - 28px)); padding:14px; border:1px solid rgba(255,76,205,.48); border-radius:18px; background:rgba(0,0,0,.82); box-shadow:0 0 30px rgba(255,76,205,.18); display:none; }
+    .submit-panel.is-visible { display:block; }
+    .submit-panel h2 { margin:0 0 8px; font-size:16px; }
+    .submit-panel p { margin:0 0 10px; color:rgba(255,255,255,.68); font-size:13px; }
+    input, button { width:100%; border:0; border-radius:12px; padding:12px; font-weight:700; }
+    input { margin-bottom:8px; background:rgba(255,255,255,.12); color:#fff; outline:1px solid rgba(255,255,255,.16); }
+    button { cursor:pointer; background:#fff; color:#000; }
+    .status { margin-top:8px; color:rgba(74,255,231,.9); font-size:12px; font-weight:700; }
   </style>
 </head>
 <body>
   <canvas id="game"></canvas>
-  <div class="rotate-screen" id="rotateScreen" aria-live="polite">
-    <div class="rotate-card">
-      <div class="phone-icon" aria-hidden="true"></div>
-      <strong>Turn iPhone Landscape</strong>
-      <span>Retro Glow Pong is built for wide play. Rotate your phone for the full arcade view.</span>
-    </div>
-  </div>
-
-  <script>
-    // ------------------------------------------------------------
-    // setup canvas
-    // ------------------------------------------------------------
-
-    const canvas = document.getElementById("game");
-    const ctx = canvas.getContext("2d");
-    const rotateScreen = document.getElementById("rotateScreen");
-
-    let width = 0;
-    let height = 0;
-    let deviceScale = 1;
-    let shouldShowRotatePrompt = false;
-
-    const userAgent = navigator.userAgent || "";
-    const isIPhone = /iPhone/i.test(userAgent);
-    const isAppleChrome = /CriOS/i.test(userAgent);
-    const isAppleSafari = /Safari/i.test(userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(userAgent);
-    const shouldEnforceLandscape = isIPhone && (isAppleSafari || isAppleChrome);
-
-    // ------------------------------------------------------------
-    // game state
-    // ------------------------------------------------------------
-
-    const player = {
-      x: 24,
-      y: 0,
-      width: 12,
-      height: 96,
-      score: 0
-    };
-
-    const cpu = {
-      x: 0,
-      y: 0,
-      width: 12,
-      height: 96,
-      score: 0,
-      skill: 0.075
-    };
-
-    const ball = {
-      x: 0,
-      y: 0,
-      radius: 8,
-      vx: 4,
-      vy: 2.2,
-      speed: 4.5
-    };
-
-    const game = {
-      rally: 0,
-      flash: 0,
-      message: "RETRO GLOW PONG",
-      lastTime: 0
-    };
-
-    const REFERENCE_WIDTH = 441;
-
-    // ------------------------------------------------------------
-    // resize function
-    // ------------------------------------------------------------
-
-    function resizeCanvas() {
-      deviceScale = Math.min(window.devicePixelRatio || 1, 2);
-      width = Math.floor(window.visualViewport ? window.visualViewport.width : window.innerWidth);
-      height = Math.floor(window.visualViewport ? window.visualViewport.height : window.innerHeight);
-      shouldShowRotatePrompt = shouldEnforceLandscape && width < height;
-      rotateScreen.classList.toggle("is-visible", shouldShowRotatePrompt);
-
-      canvas.width = Math.floor(width * deviceScale);
-      canvas.height = Math.floor(height * deviceScale);
-      canvas.style.width = width + "px";
-      canvas.style.height = height + "px";
-
-      ctx.setTransform(deviceScale, 0, 0, deviceScale, 0, 0);
-
-      player.x = Math.max(18, width * 0.06);
-      cpu.x = width - player.x - cpu.width;
-      player.height = Math.max(76, Math.min(116, height * 0.16));
-      cpu.height = player.height;
-
-      if (player.y === 0) {
-        player.y = height / 2 - player.height / 2;
-        cpu.y = height / 2 - cpu.height / 2;
-      }
-
-      clampPaddles();
-    }
-
-    // ------------------------------------------------------------
-    // input handlers
-    // ------------------------------------------------------------
-
-    function movePlayerTo(screenY) {
-      player.y = screenY - player.height / 2;
-      clampPaddles();
-    }
-
-    canvas.addEventListener("mousemove", function (event) {
-      movePlayerTo(event.clientY);
-    });
-
-    canvas.addEventListener("touchstart", function (event) {
-      event.preventDefault();
-      if (event.touches.length > 0) {
-        movePlayerTo(event.touches[0].clientY);
-      }
-    }, { passive: false });
-
-    canvas.addEventListener("touchmove", function (event) {
-      event.preventDefault();
-      if (event.touches.length > 0) {
-        movePlayerTo(event.touches[0].clientY);
-      }
-    }, { passive: false });
-
-    // ------------------------------------------------------------
-    // reset after score
-    // ------------------------------------------------------------
-
-    function resetBall(direction) {
-      ball.x = width / 2;
-      ball.y = height / 2;
-      ball.speed = startingBallSpeed();
-      ball.vx = direction * ball.speed;
-      ball.vy = (Math.random() * 2 - 1) * ball.speed * 0.65;
-      game.rally = 0;
-    }
-
-    function resetGame() {
-      player.score = 0;
-      cpu.score = 0;
-      player.y = height / 2 - player.height / 2;
-      cpu.y = height / 2 - cpu.height / 2;
-      resetBall(Math.random() > 0.5 ? 1 : -1);
-    }
-
-    // ------------------------------------------------------------
-    // helpers
-    // ------------------------------------------------------------
-
-    function clampPaddles() {
-      player.y = Math.max(0, Math.min(height - player.height, player.y));
-      cpu.y = Math.max(0, Math.min(height - cpu.height, cpu.y));
-    }
-
-    function ballHitsPaddle(paddle) {
-      return (
-        ball.x + ball.radius > paddle.x &&
-        ball.x - ball.radius < paddle.x + paddle.width &&
-        ball.y + ball.radius > paddle.y &&
-        ball.y - ball.radius < paddle.y + paddle.height
-      );
-    }
-
-    function widthSpeedScale() {
-      // Keep point timing close across browser sizes.
-      // Wider iPhone landscape screens get a faster ball because there is
-      // more horizontal distance to cross.
-      return Math.max(0.92, Math.min(1.95, width / REFERENCE_WIDTH));
-    }
-
-    function startingBallSpeed() {
-      return 4.5 * widthSpeedScale();
-    }
-
-    function maxBallSpeed() {
-      return 12 * widthSpeedScale();
-    }
-
-    function reflectFromPaddle(paddle, direction) {
-      const paddleCenter = paddle.y + paddle.height / 2;
-      const hitOffset = (ball.y - paddleCenter) / (paddle.height / 2);
-      const clampedOffset = Math.max(-1, Math.min(1, hitOffset));
-
-      game.rally++;
-      ball.speed = Math.min(maxBallSpeed(), ball.speed + 0.35 * widthSpeedScale());
-      ball.vx = direction * ball.speed;
-      ball.vy = clampedOffset * ball.speed * 0.82;
-
-      game.message = "RALLY " + game.rally;
-    }
-
-    // ------------------------------------------------------------
-    // update function
-    // ------------------------------------------------------------
-
-    function update(stepScale) {
-      if (shouldShowRotatePrompt) {
-        return;
-      }
-
-      if (game.flash > 0) {
-        game.flash--;
-      }
-
-      // CPU gets harder as the score and rally increase.
-      const difficulty = Math.min(0.18, cpu.skill + cpu.score * 0.012 + game.rally * 0.004);
-      const cpuCenter = cpu.y + cpu.height / 2;
-      cpu.y += (ball.y - cpuCenter) * difficulty;
-
-      clampPaddles();
-
-      ball.x += ball.vx * stepScale;
-      ball.y += ball.vy * stepScale;
-
-      // Top and bottom wall bounce.
-      if (ball.y - ball.radius < 0) {
-        ball.y = ball.radius;
-        ball.vy *= -1;
-      }
-
-      if (ball.y + ball.radius > height) {
-        ball.y = height - ball.radius;
-        ball.vy *= -1;
-      }
-
-      // Paddle collisions.
-      if (ball.vx < 0 && ballHitsPaddle(player)) {
-        ball.x = player.x + player.width + ball.radius;
-        reflectFromPaddle(player, 1);
-      }
-
-      if (ball.vx > 0 && ballHitsPaddle(cpu)) {
-        ball.x = cpu.x - ball.radius;
-        reflectFromPaddle(cpu, -1);
-      }
-
-      // Scoring.
-      if (ball.x < -ball.radius) {
-        cpu.score++;
-        game.flash = 20;
-        game.message = "CPU SCORES";
-        resetBall(1);
-      }
-
-      if (ball.x > width + ball.radius) {
-        player.score++;
-        game.flash = 20;
-        game.message = "PLAYER SCORES";
-        resetBall(-1);
-      }
-    }
-
-    // ------------------------------------------------------------
-    // draw background
-    // ------------------------------------------------------------
-
-    function drawBackground() {
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, width, height);
-
-      const glow = ctx.createRadialGradient(width / 2, height / 2, 10, width / 2, height / 2, Math.max(width, height) * 0.55);
-      glow.addColorStop(0, "rgba(0, 255, 230, 0.10)");
-      glow.addColorStop(0.45, "rgba(135, 82, 255, 0.05)");
-      glow.addColorStop(1, "rgba(0, 0, 0, 0)");
-
-      ctx.fillStyle = glow;
-      ctx.fillRect(0, 0, width, height);
-
-      if (game.flash > 0) {
-        ctx.globalAlpha = game.flash / 80;
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, width, height);
-        ctx.globalAlpha = 1;
-      }
-    }
-
-    // ------------------------------------------------------------
-    // draw center line
-    // ------------------------------------------------------------
-
-    function drawCenterLine() {
-      ctx.save();
-      ctx.globalAlpha = 0.35;
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
-      ctx.shadowBlur = 14;
-      ctx.shadowColor = "rgba(105, 255, 241, 0.9)";
-      ctx.lineWidth = 2;
-      ctx.setLineDash([8, 14]);
-      ctx.beginPath();
-      ctx.moveTo(width / 2, 76);
-      ctx.lineTo(width / 2, height - 24);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // ------------------------------------------------------------
-    // draw paddles
-    // ------------------------------------------------------------
-
-    function drawPaddle(paddle, color) {
-      const gradient = ctx.createLinearGradient(paddle.x, paddle.y, paddle.x + paddle.width, paddle.y + paddle.height);
-      gradient.addColorStop(0, "rgba(255, 255, 255, 0.95)");
-      gradient.addColorStop(0.45, color);
-      gradient.addColorStop(1, "rgba(165, 116, 255, 0.95)");
-
-      ctx.shadowBlur = 28;
-      ctx.shadowColor = color;
-      ctx.fillStyle = gradient;
-      ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
-
-      ctx.globalAlpha = 0.45;
-      ctx.fillStyle = "white";
-      ctx.fillRect(paddle.x + 2, paddle.y + 6, 3, paddle.height - 12);
-      ctx.globalAlpha = 1;
-      ctx.shadowBlur = 0;
-    }
-
-    // ------------------------------------------------------------
-    // draw ball
-    // ------------------------------------------------------------
-
-    function drawBall() {
-      const gradient = ctx.createRadialGradient(ball.x - 3, ball.y - 3, 1, ball.x, ball.y, ball.radius + 10);
-      gradient.addColorStop(0, "white");
-      gradient.addColorStop(0.35, "rgba(130, 255, 238, 0.95)");
-      gradient.addColorStop(1, "rgba(255, 82, 221, 0.15)");
-
-      ctx.shadowBlur = 30;
-      ctx.shadowColor = "rgba(95, 255, 238, 0.95)";
-      ctx.fillStyle = gradient;
-      ctx.beginPath();
-      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-    }
-
-    // ------------------------------------------------------------
-    // draw scoreboard
-    // ------------------------------------------------------------
-
-    function drawScoreboard() {
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-
-      ctx.shadowBlur = 14;
-      ctx.shadowColor = "rgba(255, 255, 255, 0.7)";
-      ctx.fillStyle = "rgba(255, 255, 255, 0.58)";
-      ctx.font = "bold 10px Arial";
-      ctx.fillText("PLAYER", width * 0.27, 18);
-      ctx.fillText("CPU", width * 0.73, 18);
-
-      ctx.fillStyle = "white";
-      ctx.font = "bold 36px Arial";
-      ctx.fillText(String(player.score), width * 0.27, 32);
-      ctx.fillText(String(cpu.score), width * 0.73, 32);
-
-      ctx.fillStyle = "rgba(255, 255, 255, 0.72)";
-      ctx.font = "bold 12px Arial";
-      ctx.fillText(game.message, width / 2, height - 38);
-
-      ctx.shadowBlur = 0;
-    }
-
-    // ------------------------------------------------------------
-    // draw function
-    // ------------------------------------------------------------
-
-    function draw() {
-      drawBackground();
-      drawCenterLine();
-      drawPaddle(player, "rgba(74, 255, 231, 0.95)");
-      drawPaddle(cpu, "rgba(255, 76, 205, 0.95)");
-      drawBall();
-      drawScoreboard();
-    }
-
-    // ------------------------------------------------------------
-    // game loop using requestAnimationFrame
-    // ------------------------------------------------------------
-
-    function gameLoop(now) {
-      if (!game.lastTime) {
-        game.lastTime = now;
-      }
-
-      const elapsed = Math.min(34, now - game.lastTime);
-      const stepScale = elapsed / 16.67;
-
-      game.lastTime = now;
-
-      update(stepScale);
-      draw();
-      requestAnimationFrame(gameLoop);
-    }
-
-    window.addEventListener("resize", resizeCanvas);
-    window.addEventListener("orientationchange", resizeCanvas);
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", resizeCanvas);
-    }
-
-    resizeCanvas();
-    resetGame();
-    requestAnimationFrame(gameLoop);
-  </script>
+  <aside class="panel" aria-label="Leaderboard">
+    <h2>Leaderboard</h2>
+    <div id="leaderboard" class="empty">Loading leaderboard...</div>
+  </aside>
+  <section class="submit-panel" id="submitPanel" aria-label="Submit score">
+    <h2>Submit Score</h2>
+    <p id="finalScoreText">Game complete.</p>
+    <input id="displayName" maxlength="24" placeholder="Display name, example: Nadi D." autocomplete="name">
+    <button id="submitScoreBtn">Submit Score for Approval</button>
+    <div class="status" id="submitStatus"></div>
+  </section>
+  <div class="rotate-screen" id="rotateScreen" aria-live="polite"><div class="rotate-card"><div class="phone-icon" aria-hidden="true"></div><strong>Turn iPhone Landscape</strong><span>Retro Glow Pong is built for wide play. Rotate your phone for the full arcade view.</span></div></div>
+
+<script>
+const REPO_OWNER = "nadidoug";
+const REPO_NAME = "retropong";
+const WINNING_SCORE = 10;
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const rotateScreen = document.getElementById("rotateScreen");
+const submitPanel = document.getElementById("submitPanel");
+const finalScoreText = document.getElementById("finalScoreText");
+const displayNameInput = document.getElementById("displayName");
+const submitStatus = document.getElementById("submitStatus");
+const leaderboardEl = document.getElementById("leaderboard");
+let width = 0, height = 0, deviceScale = 1, shouldShowRotatePrompt = false;
+const userAgent = navigator.userAgent || "";
+const isIPhone = /iPhone/i.test(userAgent);
+const isAppleChrome = /CriOS/i.test(userAgent);
+const isAppleSafari = /Safari/i.test(userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(userAgent);
+const shouldEnforceLandscape = isIPhone && (isAppleSafari || isAppleChrome);
+const player = { x:24, y:0, width:12, height:96, score:0 };
+const cpu = { x:0, y:0, width:12, height:96, score:0, skill:.075 };
+const ball = { x:0, y:0, radius:8, vx:4, vy:2.2, speed:4.5 };
+const game = { rally:0, flash:0, message:"RETRO GLOW PONG", lastTime:0, over:false, wins:0, losses:0, lastScore:0 };
+const REFERENCE_WIDTH = 441;
+function resizeCanvas(){ deviceScale=Math.min(window.devicePixelRatio||1,2); width=Math.floor(window.visualViewport?window.visualViewport.width:window.innerWidth); height=Math.floor(window.visualViewport?window.visualViewport.height:window.innerHeight); shouldShowRotatePrompt=shouldEnforceLandscape&&width<height; rotateScreen.classList.toggle("is-visible", shouldShowRotatePrompt); canvas.width=Math.floor(width*deviceScale); canvas.height=Math.floor(height*deviceScale); canvas.style.width=width+"px"; canvas.style.height=height+"px"; ctx.setTransform(deviceScale,0,0,deviceScale,0,0); player.x=Math.max(18,width*.06); cpu.x=width-player.x-cpu.width; player.height=Math.max(76,Math.min(116,height*.16)); cpu.height=player.height; if(player.y===0){ player.y=height/2-player.height/2; cpu.y=height/2-cpu.height/2;} clampPaddles(); }
+function movePlayerTo(screenY){ if(game.over) return; player.y=screenY-player.height/2; clampPaddles(); }
+canvas.addEventListener("mousemove", e=>movePlayerTo(e.clientY));
+canvas.addEventListener("touchstart", e=>{ e.preventDefault(); if(e.touches.length) movePlayerTo(e.touches[0].clientY); }, {passive:false});
+canvas.addEventListener("touchmove", e=>{ e.preventDefault(); if(e.touches.length) movePlayerTo(e.touches[0].clientY); }, {passive:false});
+function resetBall(direction){ ball.x=width/2; ball.y=height/2; ball.speed=startingBallSpeed(); ball.vx=direction*ball.speed; ball.vy=(Math.random()*2-1)*ball.speed*.65; game.rally=0; }
+function resetGame(){ player.score=0; cpu.score=0; game.over=false; submitPanel.classList.remove("is-visible"); player.y=height/2-player.height/2; cpu.y=height/2-cpu.height/2; resetBall(Math.random()>.5?1:-1); }
+function endGame(won){ game.over=true; game.wins=won?1:0; game.losses=won?0:1; game.lastScore=player.score*100 + game.rally*10 - cpu.score*25; game.lastScore=Math.max(0, game.lastScore); game.message=won?"YOU WIN":"CPU WINS"; finalScoreText.textContent=`Final score: ${game.lastScore} | Wins: ${game.wins} | Losses: ${game.losses}`; submitStatus.textContent=""; submitPanel.classList.add("is-visible"); }
+function clampPaddles(){ player.y=Math.max(0,Math.min(height-player.height,player.y)); cpu.y=Math.max(0,Math.min(height-cpu.height,cpu.y)); }
+function ballHitsPaddle(p){ return ball.x+ball.radius>p.x && ball.x-ball.radius<p.x+p.width && ball.y+ball.radius>p.y && ball.y-ball.radius<p.y+p.height; }
+function widthSpeedScale(){ return Math.max(.92,Math.min(1.95,width/REFERENCE_WIDTH)); }
+function startingBallSpeed(){ return 4.5*widthSpeedScale(); }
+function maxBallSpeed(){ return 12*widthSpeedScale(); }
+function reflectFromPaddle(p,direction){ const center=p.y+p.height/2; const hit=(ball.y-center)/(p.height/2); const off=Math.max(-1,Math.min(1,hit)); game.rally++; ball.speed=Math.min(maxBallSpeed(),ball.speed+.35*widthSpeedScale()); ball.vx=direction*ball.speed; ball.vy=off*ball.speed*.82; game.message="RALLY "+game.rally; }
+function update(stepScale){ if(shouldShowRotatePrompt||game.over) return; if(game.flash>0) game.flash--; const difficulty=Math.min(.18,cpu.skill+cpu.score*.012+game.rally*.004); const cpuCenter=cpu.y+cpu.height/2; cpu.y+=(ball.y-cpuCenter)*difficulty; clampPaddles(); ball.x+=ball.vx*stepScale; ball.y+=ball.vy*stepScale; if(ball.y-ball.radius<0){ ball.y=ball.radius; ball.vy*=-1; } if(ball.y+ball.radius>height){ ball.y=height-ball.radius; ball.vy*=-1; } if(ball.vx<0&&ballHitsPaddle(player)){ ball.x=player.x+player.width+ball.radius; reflectFromPaddle(player,1); } if(ball.vx>0&&ballHitsPaddle(cpu)){ ball.x=cpu.x-ball.radius; reflectFromPaddle(cpu,-1); } if(ball.x<-ball.radius){ cpu.score++; game.flash=20; game.message="CPU SCORES"; if(cpu.score>=WINNING_SCORE) endGame(false); else resetBall(1); } if(ball.x>width+ball.radius){ player.score++; game.flash=20; game.message="PLAYER SCORES"; if(player.score>=WINNING_SCORE) endGame(true); else resetBall(-1); } }
+function drawBackground(){ ctx.fillStyle="#000"; ctx.fillRect(0,0,width,height); const glow=ctx.createRadialGradient(width/2,height/2,10,width/2,height/2,Math.max(width,height)*.55); glow.addColorStop(0,"rgba(0,255,230,.10)"); glow.addColorStop(.45,"rgba(135,82,255,.05)"); glow.addColorStop(1,"rgba(0,0,0,0)"); ctx.fillStyle=glow; ctx.fillRect(0,0,width,height); if(game.flash>0){ ctx.globalAlpha=game.flash/80; ctx.fillStyle="white"; ctx.fillRect(0,0,width,height); ctx.globalAlpha=1; } }
+function drawCenterLine(){ ctx.save(); ctx.globalAlpha=.35; ctx.strokeStyle="rgba(255,255,255,.8)"; ctx.shadowBlur=14; ctx.shadowColor="rgba(105,255,241,.9)"; ctx.lineWidth=2; ctx.setLineDash([8,14]); ctx.beginPath(); ctx.moveTo(width/2,76); ctx.lineTo(width/2,height-24); ctx.stroke(); ctx.restore(); }
+function drawPaddle(p,color){ const gradient=ctx.createLinearGradient(p.x,p.y,p.x+p.width,p.y+p.height); gradient.addColorStop(0,"rgba(255,255,255,.95)"); gradient.addColorStop(.45,color); gradient.addColorStop(1,"rgba(165,116,255,.95)"); ctx.shadowBlur=28; ctx.shadowColor=color; ctx.fillStyle=gradient; ctx.fillRect(p.x,p.y,p.width,p.height); ctx.globalAlpha=.45; ctx.fillStyle="white"; ctx.fillRect(p.x+2,p.y+6,3,p.height-12); ctx.globalAlpha=1; ctx.shadowBlur=0; }
+function drawBall(){ const gradient=ctx.createRadialGradient(ball.x-3,ball.y-3,1,ball.x,ball.y,ball.radius+10); gradient.addColorStop(0,"white"); gradient.addColorStop(.35,"rgba(130,255,238,.95)"); gradient.addColorStop(1,"rgba(255,82,221,.15)"); ctx.shadowBlur=30; ctx.shadowColor="rgba(95,255,238,.95)"; ctx.fillStyle=gradient; ctx.beginPath(); ctx.arc(ball.x,ball.y,ball.radius,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; }
+function drawScoreboard(){ ctx.textAlign="center"; ctx.textBaseline="top"; ctx.shadowBlur=14; ctx.shadowColor="rgba(255,255,255,.7)"; ctx.fillStyle="rgba(255,255,255,.58)"; ctx.font="bold 10px Arial"; ctx.fillText("PLAYER",width*.27,18); ctx.fillText("CPU",width*.73,18); ctx.fillStyle="white"; ctx.font="bold 36px Arial"; ctx.fillText(String(player.score),width*.27,32); ctx.fillText(String(cpu.score),width*.73,32); ctx.fillStyle="rgba(255,255,255,.72)"; ctx.font="bold 12px Arial"; ctx.fillText(game.message,width/2,height-38); ctx.shadowBlur=0; }
+function draw(){ drawBackground(); drawCenterLine(); drawPaddle(player,"rgba(74,255,231,.95)"); drawPaddle(cpu,"rgba(255,76,205,.95)"); drawBall(); drawScoreboard(); }
+function gameLoop(now){ if(!game.lastTime) game.lastTime=now; const elapsed=Math.min(34,now-game.lastTime); game.lastTime=now; update(elapsed/16.67); draw(); requestAnimationFrame(gameLoop); }
+async function loadLeaderboard(){ try{ const res=await fetch("leaderboard.json?cache="+Date.now()); if(!res.ok) throw new Error("missing"); const data=await res.json(); if(!Array.isArray(data)||!data.length){ leaderboardEl.textContent="No approved scores yet."; return; } leaderboardEl.className=""; leaderboardEl.innerHTML=data.sort((a,b)=>(b.highScore||0)-(a.highScore||0)).map((row,i)=>`<div class="leader-row"><strong>#${i+1}</strong><span>${escapeHtml(row.displayName||"Player")}</span><strong>${Number(row.highScore||0)}</strong><div class="leader-meta">W ${Number(row.wins||0)} | L ${Number(row.losses||0)} | ${escapeHtml(row.timestamp||"")}</div></div>`).join(""); }catch(err){ leaderboardEl.textContent="No approved scores yet."; } }
+function escapeHtml(value){ return String(value).replace(/[&<>'"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c])); }
+function submitScore(){ const displayName=displayNameInput.value.trim(); if(!displayName){ submitStatus.textContent="Enter a display name first."; return; } const timestamp=new Date().toISOString(); const title=`Score Submission: ${displayName}`; const body=[`displayName: ${displayName}`,`score: ${game.lastScore}`,`wins: ${game.wins}`,`losses: ${game.losses}`,`timestamp: ${timestamp}`].join("%0A"); const url=`https://github.com/${REPO_OWNER}/${REPO_NAME}/issues/new?title=${encodeURIComponent(title)}&body=${body}&labels=score-submission`; window.open(url,"_blank","noopener,noreferrer"); submitStatus.textContent="Score opened as a GitHub Issue. It is pending approval."; }
+document.getElementById("submitScoreBtn").addEventListener("click",submitScore);
+window.addEventListener("keydown", e=>{ if(e.key.toLowerCase()==="r") resetGame(); });
+window.addEventListener("resize",resizeCanvas); window.addEventListener("orientationchange",resizeCanvas); if(window.visualViewport) window.visualViewport.addEventListener("resize",resizeCanvas);
+resizeCanvas(); resetGame(); loadLeaderboard(); requestAnimationFrame(gameLoop);
+</script>
 </body>
 </html>
