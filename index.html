@@ -152,8 +152,11 @@
     const game = {
       rally: 0,
       flash: 0,
-      message: "RETRO GLOW PONG"
+      message: "RETRO GLOW PONG",
+      lastTime: 0
     };
+
+    const REFERENCE_WIDTH = 441;
 
     // ------------------------------------------------------------
     // resize function
@@ -220,9 +223,9 @@
     function resetBall(direction) {
       ball.x = width / 2;
       ball.y = height / 2;
-      ball.speed = 4.5;
+      ball.speed = startingBallSpeed();
       ball.vx = direction * ball.speed;
-      ball.vy = (Math.random() * 2 - 1) * 3;
+      ball.vy = (Math.random() * 2 - 1) * ball.speed * 0.65;
       game.rally = 0;
     }
 
@@ -252,13 +255,28 @@
       );
     }
 
+    function widthSpeedScale() {
+      // Keep point timing close across browser sizes.
+      // Wider iPhone landscape screens get a faster ball because there is
+      // more horizontal distance to cross.
+      return Math.max(0.92, Math.min(1.95, width / REFERENCE_WIDTH));
+    }
+
+    function startingBallSpeed() {
+      return 4.5 * widthSpeedScale();
+    }
+
+    function maxBallSpeed() {
+      return 12 * widthSpeedScale();
+    }
+
     function reflectFromPaddle(paddle, direction) {
       const paddleCenter = paddle.y + paddle.height / 2;
       const hitOffset = (ball.y - paddleCenter) / (paddle.height / 2);
       const clampedOffset = Math.max(-1, Math.min(1, hitOffset));
 
       game.rally++;
-      ball.speed = Math.min(12, ball.speed + 0.35);
+      ball.speed = Math.min(maxBallSpeed(), ball.speed + 0.35 * widthSpeedScale());
       ball.vx = direction * ball.speed;
       ball.vy = clampedOffset * ball.speed * 0.82;
 
@@ -269,7 +287,7 @@
     // update function
     // ------------------------------------------------------------
 
-    function update() {
+    function update(stepScale) {
       if (shouldShowRotatePrompt) {
         return;
       }
@@ -285,8 +303,8 @@
 
       clampPaddles();
 
-      ball.x += ball.vx;
-      ball.y += ball.vy;
+      ball.x += ball.vx * stepScale;
+      ball.y += ball.vy * stepScale;
 
       // Top and bottom wall bounce.
       if (ball.y - ball.radius < 0) {
@@ -454,8 +472,17 @@
     // game loop using requestAnimationFrame
     // ------------------------------------------------------------
 
-    function gameLoop() {
-      update();
+    function gameLoop(now) {
+      if (!game.lastTime) {
+        game.lastTime = now;
+      }
+
+      const elapsed = Math.min(34, now - game.lastTime);
+      const stepScale = elapsed / 16.67;
+
+      game.lastTime = now;
+
+      update(stepScale);
       draw();
       requestAnimationFrame(gameLoop);
     }
@@ -469,7 +496,7 @@
 
     resizeCanvas();
     resetGame();
-    gameLoop();
+    requestAnimationFrame(gameLoop);
   </script>
 </body>
 </html>

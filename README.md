@@ -30,6 +30,7 @@ Then open the local URL shown in the terminal.
 - Scoreboard
 - Reset after score
 - Rally-based ball speed increase
+- Width-relative ball timing for wide iPhone landscape screens
 - CPU difficulty rises with score and rally length
 
 ## Files
