@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Retro Glow Pong Social Preview</title>
+  <desc id="desc">Social preview graphic for Retro Glow Pong.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#0D2628"/>
+      <stop offset="46%" stop-color="#070713"/>
+      <stop offset="100%" stop-color="#000"/>
+    </radialGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g filter="url(#glow)">
+    <rect x="120" y="190" width="34" height="210" rx="10" fill="#4AFFE7"/>
+    <rect x="1046" y="190" width="34" height="210" rx="10" fill="#FF4CCD"/>
+    <circle cx="708" cy="280" r="22" fill="#fff"/>
+    <path d="M600 118v394" stroke="#DDE9FF" stroke-width="5" stroke-linecap="round" stroke-dasharray="12 24" opacity=".55"/>
+  </g>
+  <text x="600" y="268" text-anchor="middle" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="84" font-weight="900" letter-spacing="7">RETRO GLOW</text>
+  <text x="600" y="348" text-anchor="middle" fill="#4AFFE7" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="900" letter-spacing="12">PONG</text>
+  <text x="600" y="410" text-anchor="middle" fill="#DDE9FF" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">single-file HTML5 Canvas prototype</text>
+</svg>

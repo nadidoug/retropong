@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Retro Glow Pong Palette</title>
+  <desc id="desc">Brand color palette for Retro Glow Pong.</desc>
+  <rect width="1200" height="675" fill="#000"/>
+  <text x="80" y="92" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="900">RETRO GLOW PONG</text>
+  <text x="80" y="136" fill="#9BA8B8" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">BRAND PALETTE</text>
+  <g font-family="Arial, Helvetica, sans-serif" font-weight="900">
+    <rect x="80" y="210" width="180" height="180" rx="18" fill="#000" stroke="#20252D"/>
+    <text x="80" y="430" fill="#fff" font-size="24">OLED BLACK</text>
+    <text x="80" y="464" fill="#9BA8B8" font-size="20">#000000</text>
+    <rect x="300" y="210" width="180" height="180" rx="18" fill="#4AFFE7"/>
+    <text x="300" y="430" fill="#fff" font-size="24">PLASMA CYAN</text>
+    <text x="300" y="464" fill="#9BA8B8" font-size="20">#4AFFE7</text>
+    <rect x="520" y="210" width="180" height="180" rx="18" fill="#FF4CCD"/>
+    <text x="520" y="430" fill="#fff" font-size="24">ARCADE MAGENTA</text>
+    <text x="520" y="464" fill="#9BA8B8" font-size="20">#FF4CCD</text>
+    <rect x="740" y="210" width="180" height="180" rx="18" fill="#A574FF"/>
+    <text x="740" y="430" fill="#fff" font-size="24">GLASS VIOLET</text>
+    <text x="740" y="464" fill="#9BA8B8" font-size="20">#A574FF</text>
+    <rect x="960" y="210" width="180" height="180" rx="18" fill="#DDE9FF"/>
+    <text x="960" y="430" fill="#fff" font-size="24">SOFT CHROME</text>
+    <text x="960" y="464" fill="#9BA8B8" font-size="20">#DDE9FF</text>
+  </g>
+</svg>
