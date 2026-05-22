@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Pong Tournament
- * Description: Displays a Pong tournament landing page, signup form, score submission form, and live leaderboard pulled from GitHub Pages.
- * Version: 1.0.0
+ * Description: Displays a one-page Pong tournament hub with signup, live leaderboard, play timer popup, and GitHub Issue score submissions.
+ * Version: 1.1.0
  * Author: Nadidoug
  */
 
@@ -15,21 +15,23 @@ function pong_tournament_assets() {
         'pong-tournament-style',
         plugin_dir_url(__FILE__) . 'assets/tournament.css',
         array(),
-        '1.0.0'
+        '1.1.0'
     );
 
     wp_enqueue_script(
         'pong-tournament-script',
         plugin_dir_url(__FILE__) . 'assets/tournament.js',
         array(),
-        '1.0.0',
+        '1.1.0',
         true
     );
 
     wp_localize_script('pong-tournament-script', 'PongTournamentSettings', array(
         'leaderboardUrl' => 'https://nadidoug.github.io/retropong/leaderboard.json',
         'gameUrl' => 'https://nadidoug.github.io/retropong/',
-        'issueUrl' => 'https://github.com/nadidoug/retropong/issues/new'
+        'issueUrl' => 'https://github.com/nadidoug/retropong/issues/new',
+        'playSeconds' => 120,
+        'refreshSeconds' => 20
     ));
 }
 add_action('wp_enqueue_scripts', 'pong_tournament_assets');
@@ -40,39 +42,56 @@ function pong_tournament_shortcode() {
     <div class="pong-tournament-page">
         <header class="pong-hero">
             <div class="pong-hero-inner">
-                <div class="pong-tagline">Long-Running Skill Challenge</div>
+                <div class="pong-tagline">2-Minute Skill Challenge</div>
                 <h1>Pong Tournament</h1>
                 <p>
-                    Sign up, play, post your score, climb the leaderboard, and compete over time.
-                    This is a public competition page for players who want bragging rights and ranking.
+                    Sign up, play the official Pong game, submit your score, and watch the live leaderboard update as approved scores come in.
                 </p>
                 <div class="pong-buttons">
                     <a href="#signup" class="pong-button">Sign Up</a>
-                    <a href="https://nadidoug.github.io/retropong/" class="pong-button pong-secondary" target="_blank" rel="noopener">Play Game</a>
-                    <a href="#leaderboard" class="pong-button pong-secondary">View Leaderboard</a>
+                    <a href="https://nadidoug.github.io/retropong/" class="pong-button pong-play-button" id="pongPlayButton" target="_blank" rel="noopener">Play Game</a>
+                    <a href="#submit-score" class="pong-button pong-secondary">Submit Score</a>
                 </div>
             </div>
         </header>
 
+        <section id="leaderboard" class="pong-section pong-front-leaderboard">
+            <div class="pong-section-title-row">
+                <div>
+                    <h2>Live Leaderboard</h2>
+                    <p>Approved scores refresh automatically. Phone numbers and emails are never displayed.</p>
+                </div>
+                <button type="button" class="pong-small-button" id="pongRefreshLeaderboard">Refresh</button>
+            </div>
+            <div class="pong-table-wrap">
+                <table class="pong-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Score</th>
+                            <th>Wins</th>
+                            <th>Losses</th>
+                            <th>Approved</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pongLeaderboardBody">
+                        <tr>
+                            <td colspan="6">Loading approved scores...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="pong-status" id="pongLeaderboardStatus">Leaderboard refreshes automatically.</p>
+        </section>
+
         <section id="rules" class="pong-section">
             <h2>How It Works</h2>
             <div class="pong-grid">
-                <div class="pong-card">
-                    <h3>1. Sign Up</h3>
-                    <p>Enter your name, phone, and player display name. Phone and email stay private.</p>
-                </div>
-                <div class="pong-card">
-                    <h3>2. Play Pong</h3>
-                    <p>Play the official GitHub Pages game version and record your score.</p>
-                </div>
-                <div class="pong-card">
-                    <h3>3. Submit Score</h3>
-                    <p>Submit your score as a GitHub Issue for review and leaderboard placement.</p>
-                </div>
-                <div class="pong-card">
-                    <h3>4. Climb Rankings</h3>
-                    <p>The highest approved scores stay visible on the public tournament board.</p>
-                </div>
+                <div class="pong-card"><h3>1. Sign Up</h3><p>Enter your name, phone, and public leaderboard name.</p></div>
+                <div class="pong-card"><h3>2. Play 2 Minutes</h3><p>Click Play Game. This tournament page starts a 2-minute reminder timer.</p></div>
+                <div class="pong-card"><h3>3. Submit Score</h3><p>When the timer ends, a pop-up tells you to submit your score.</p></div>
+                <div class="pong-card"><h3>4. Get Approved</h3><p>Approved GitHub Issue scores appear on the live leaderboard.</p></div>
             </div>
         </section>
 
@@ -109,29 +128,6 @@ function pong_tournament_shortcode() {
             </form>
         </section>
 
-        <section id="leaderboard" class="pong-section">
-            <h2>Leaderboard</h2>
-            <div class="pong-table-wrap">
-                <table class="pong-table">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Player</th>
-                            <th>Score</th>
-                            <th>Wins</th>
-                            <th>Losses</th>
-                            <th>Approved</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pongLeaderboardBody">
-                        <tr>
-                            <td colspan="6">Loading approved scores...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
         <section class="pong-section">
             <h2>Rules</h2>
             <p>
@@ -141,9 +137,18 @@ function pong_tournament_shortcode() {
             </p>
         </section>
 
-        <footer class="pong-footer">
-            Pong Tournament © 2026
-        </footer>
+        <div class="pong-modal" id="pongPlayModal" aria-hidden="true">
+            <div class="pong-modal-card">
+                <h2>2 Minutes Are Up</h2>
+                <p>Time to submit your Pong score. Enter your leaderboard name and score so it can be reviewed.</p>
+                <div class="pong-buttons">
+                    <a href="#submit-score" class="pong-button" id="pongGoSubmit">Submit Score</a>
+                    <button type="button" class="pong-button pong-secondary" id="pongCloseModal">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <footer class="pong-footer">Pong Tournament © 2026</footer>
     </div>
     <?php
     return ob_get_clean();
