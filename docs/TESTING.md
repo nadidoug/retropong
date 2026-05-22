@@ -15,14 +15,16 @@
 
 ## Mobile Test
 
-1. Open the game on a phone browser.
+1. Open the game on iPhone Safari or iPhone Chrome.
 2. Hold the phone in portrait.
 3. Confirm the rotate-to-landscape prompt appears.
-4. Rotate the phone to landscape.
-5. Confirm the game fills the landscape browser viewport.
-6. Drag vertically anywhere on the canvas.
-7. Confirm the paddle tracks smoothly.
-8. Confirm the page does not scroll while playing.
+4. Open the game in a non-iPhone Safari/Chrome browser.
+5. Confirm the game plays normally without the forced rotate prompt.
+6. Rotate the iPhone to landscape.
+7. Confirm the game fills the landscape browser viewport.
+8. Drag vertically anywhere on the canvas.
+9. Confirm the paddle tracks smoothly.
+10. Confirm the page does not scroll while playing.
 
 ## Expected Console Result
 

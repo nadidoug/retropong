@@ -84,10 +84,8 @@
       transform: rotate(90deg);
     }
 
-    @media (orientation: portrait) and (max-width: 900px) {
-      .rotate-screen {
-        display: grid;
-      }
+    .rotate-screen.is-visible {
+      display: grid;
     }
   </style>
 </head>
@@ -108,11 +106,18 @@
 
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
+    const rotateScreen = document.getElementById("rotateScreen");
 
     let width = 0;
     let height = 0;
     let deviceScale = 1;
-    let isPortraitPhone = false;
+    let shouldShowRotatePrompt = false;
+
+    const userAgent = navigator.userAgent || "";
+    const isIPhone = /iPhone/i.test(userAgent);
+    const isAppleChrome = /CriOS/i.test(userAgent);
+    const isAppleSafari = /Safari/i.test(userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(userAgent);
+    const shouldEnforceLandscape = isIPhone && (isAppleSafari || isAppleChrome);
 
     // ------------------------------------------------------------
     // game state
@@ -158,7 +163,8 @@
       deviceScale = Math.min(window.devicePixelRatio || 1, 2);
       width = Math.floor(window.visualViewport ? window.visualViewport.width : window.innerWidth);
       height = Math.floor(window.visualViewport ? window.visualViewport.height : window.innerHeight);
-      isPortraitPhone = width < height && width <= 900;
+      shouldShowRotatePrompt = shouldEnforceLandscape && width < height;
+      rotateScreen.classList.toggle("is-visible", shouldShowRotatePrompt);
 
       canvas.width = Math.floor(width * deviceScale);
       canvas.height = Math.floor(height * deviceScale);
@@ -264,7 +270,7 @@
     // ------------------------------------------------------------
 
     function update() {
-      if (isPortraitPhone) {
+      if (shouldShowRotatePrompt) {
         return;
       }
 
