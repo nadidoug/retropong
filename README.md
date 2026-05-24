@@ -1,38 +1,32 @@
 # Retro Glow Pong
 
-Timed arcade mode.
+Current public build.
 
 ## Play Live
 
 https://nadidoug.github.io/retropong/
 
-Cache refresh version:
+## Next Version (Orb Reactor Preview)
 
-https://nadidoug.github.io/retropong/?v=timed-mode
+https://nadidoug.github.io/retropong/?v=orb-reactor-preview
+
+Planned changes:
+- one-player goalie survival
+- portrait and landscape phone play
+- score increases over time
+- chaos waves with extra balls
+- bounce shapes and power orbs
+- approved leaderboard flow
 
 ## Gameplay Flow
 
 1. Start game
-2. 60 second timed round
-3. Leaderboard stays hidden during gameplay
-4. Timer ends
-5. Final score screen appears
-6. Leaderboard appears
-7. Optional score submission
+2. Survive as long as possible
+3. Build score
+4. Submit score
+5. Approved scores appear later
 
 ## Files
 
-- `index.html` → main game
-- `leaderboard.json` → approved scores
-
-## Sound
-
-Tap:
-
-🔊 Sound Off
-
-It becomes:
-
-🔊 Sound On
-
-Then paddle and score sounds activate.
+- `index.html`
+- `leaderboard.json`
