@@ -1,1 +1,60 @@
-<!DOCTYPE html><html><body><script>/* leaderboard tab removed from front UI; leaderboard now only loads inside end-of-round score submission view */</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Orb Reactor</title>
+<style>
+html,body{margin:0;height:100%;background:#02030a;color:#eaffff;font-family:Arial,sans-serif;overflow:hidden}body{display:grid;place-items:center}.wrap{width:100vw;height:100vh;display:grid;grid-template-rows:auto 1fr auto;background:radial-gradient(circle at 30% 10%,#15204a,#02030a 60%)}header{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;padding:8px;background:#030817cc;border-bottom:1px solid #42f5ff55}.stat{font-size:13px;border:1px solid #42f5ff55;border-radius:999px;padding:7px 10px;background:#0006}.stat b{color:#65ff8f}#stage{position:relative;min-height:0}canvas{display:block;width:100%;height:100%;touch-action:none;background:#02030a}.screen{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px;background:#02030ad9}.hidden{display:none}.card{max-width:560px}.title{font-size:clamp(42px,12vw,86px);margin:0 0 10px;text-shadow:0 0 12px #42f5ff,0 0 24px #ff3df2}.copy{color:#bdebf3;line-height:1.5}.btn{border:1px solid #42f5ff;background:#071427;color:#fff;border-radius:14px;padding:13px 18px;font-weight:bold}footer{font-size:12px;text-align:center;color:#8aa9b5;padding:6px}@media(orientation:portrait){header{justify-content:flex-start}.stat{font-size:12px;padding:6px 8px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div class="stat">Score <b id="score">0</b></div>
+<div class="stat">Saves <b id="saves">0</b></div>
+<div class="stat">Time <b id="time">0</b>s</div>
+<div class="stat">Mode <b id="mode">Ready</b></div>
+</header>
+<section id="stage">
+<canvas id="game"></canvas>
+<div id="startScreen" class="screen"><div class="card"><h1 class="title">ORB REACTOR</h1><p class="copy">One-player goalie survival. Guard the right side in landscape or the bottom in portrait. Score rises with time and saves.</p><button class="btn" id="startBtn">Start Game</button></div></div>
+<div id="endScreen" class="screen hidden"><div class="card"><h1 class="title">RUN ENDED</h1><p class="copy" id="finalText"></p><button class="btn" id="againBtn">Play Again</button></div></div>
+</section>
+<footer>Portrait and landscape supported. Drag with one thumb.</footer>
+</div>
+<script>
+const canvas=document.getElementById('game');
+const ctx=canvas.getContext('2d');
+const scoreEl=document.getElementById('score');
+const savesEl=document.getElementById('saves');
+const timeEl=document.getElementById('time');
+const modeEl=document.getElementById('mode');
+const startScreen=document.getElementById('startScreen');
+const endScreen=document.getElementById('endScreen');
+const finalText=document.getElementById('finalText');
+let W=800,H=500,portrait=false,running=false,last=0,startTime=0,score=0,saves=0,nextWave=18,waveEnd=0,mode='Ready';
+let player={x:0,y:0,w:20,h:120,target:0};
+let balls=[];let shapes=[];let orbs=[];
+function fit(){const r=canvas.getBoundingClientRect();W=Math.max(320,r.width);H=Math.max(240,r.height);canvas.width=W;canvas.height=H;portrait=H>W;setupPlayer();}
+function setupPlayer(){if(portrait){player.w=Math.max(90,W*.25);player.h=18;player.x=W/2-player.w/2;player.y=H-42;player.target=player.x}else{player.w=18;player.h=Math.max(85,H*.22);player.x=W-42;player.y=H/2-player.h/2;player.target=player.y}}
+window.addEventListener('resize',fit);
+function rand(a,b){return Math.random()*(b-a)+a}
+function newBall(extra=false){const speed=extra?300:240;const a=portrait?rand(-2.35,-.8):rand(-.55,.55);return{x:portrait?rand(80,W-80):W*.3,y:portrait?H*.35:rand(80,H-80),r:extra?8:10,vx:portrait?Math.cos(a)*speed:Math.cos(a)*speed,vy:portrait?Math.sin(a)*speed:Math.sin(a)*speed,main:!extra}}
+function reset(){fit();running=true;last=performance.now();startTime=last;score=0;saves=0;nextWave=18;waveEnd=0;mode='Survive';balls=[newBall(false)];shapes=[];orbs=[];startScreen.classList.add('hidden');endScreen.classList.add('hidden');requestAnimationFrame(loop)}
+function pointer(e){const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;if(portrait){player.target=(t.clientX-r.left)-player.w/2}else{player.target=(t.clientY-r.top)-player.h/2}}
+canvas.addEventListener('mousemove',pointer);canvas.addEventListener('touchmove',e=>{e.preventDefault();pointer(e)},{passive:false});canvas.addEventListener('touchstart',pointer,{passive:true});
+function startWave(sec){mode='Chaos';waveEnd=sec+7;nextWave=sec+22;balls.push(newBall(true),newBall(true));}
+function endWave(){mode='Survive';balls=balls.filter(b=>b.main);if(!balls.length)balls=[newBall(false)];score+=25;}
+function spawnShape(){shapes=[{x:rand(80,W*.55),y:rand(80,H*.65),r:rand(22,42)},{x:rand(80,W*.55),y:rand(80,H*.65),r:rand(20,36)}]}
+function spawnOrb(){orbs.push({x:rand(80,W*.65),y:rand(70,H*.65),r:12,kind:['green','gold','blue'][Math.floor(rand(0,3))]})}
+function lose(sec){running=false;finalText.textContent='Score '+Math.floor(score)+' | Saves '+saves+' | Time '+Math.floor(sec)+'s';endScreen.classList.remove('hidden')}
+function update(dt,t){const sec=(t-startTime)/1000;score+=dt;if(sec>nextWave)startWave(sec);if(waveEnd&&sec>waveEnd){waveEnd=0;endWave()}if(sec>30&&shapes.length<2)spawnShape();if(Math.floor(sec)%10===0&&orbs.length<2)spawnOrb();if(portrait){player.x+=(Math.max(0,Math.min(W-player.w,player.target))-player.x)*.25}else{player.y+=(Math.max(0,Math.min(H-player.h,player.target))-player.y)*.25}
+for(const b of balls){b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.x-b.r<0){b.x=b.r;b.vx=Math.abs(b.vx)}if(b.x+b.r>W&&!portrait){if(b.y+b.r>player.y&&b.y-b.r<player.y+player.h&&b.vx>0){b.vx=-Math.abs(b.vx)*1.035;b.x=player.x-b.r;saves++;score+=5}else lose(sec)}if(b.y-b.r<0){b.y=b.r;b.vy=Math.abs(b.vy)}if(b.y+b.r>H){if(portrait){if(b.x+b.r>player.x&&b.x-b.r<player.x+player.w&&b.vy>0){b.vy=-Math.abs(b.vy)*1.035;b.y=player.y-b.r;saves++;score+=5}else lose(sec)}else{b.y=H-b.r;b.vy=-Math.abs(b.vy)}}for(const s of shapes){const dx=b.x-s.x,dy=b.y-s.y,d=Math.hypot(dx,dy);if(d<b.r+s.r){const nx=dx/d,ny=dy/d,dot=b.vx*nx+b.vy*ny;b.vx-=2*dot*nx;b.vy-=2*dot*ny;score+=2}}for(const o of [...orbs]){if(Math.hypot(b.x-o.x,b.y-o.y)<b.r+o.r){score+=o.kind==='green'?10:o.kind==='gold'?25:15;orbs=orbs.filter(q=>q!==o)}}}
+scoreEl.textContent=Math.floor(score);savesEl.textContent=saves;timeEl.textContent=Math.floor(sec);modeEl.textContent=mode;}
+function draw(){ctx.fillStyle='#02030a';ctx.fillRect(0,0,W,H);ctx.strokeStyle='#12324d';for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}ctx.shadowBlur=18;ctx.shadowColor='#42f5ff';ctx.fillStyle='#42f5ff';ctx.fillRect(player.x,player.y,player.w,player.h);ctx.shadowBlur=0;ctx.strokeStyle='#ffd166';ctx.lineWidth=3;for(const s of shapes){ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.stroke()}for(const o of orbs){ctx.fillStyle=o.kind==='green'?'#65ff8f':o.kind==='gold'?'#ffd166':'#42f5ff';ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,Math.PI*2);ctx.fill()}ctx.fillStyle='#ff3df2';for(const b of balls){ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill()}}
+function loop(t){const dt=Math.min(.033,(t-last)/1000||0);last=t;if(running)update(dt,t);draw();if(running)requestAnimationFrame(loop)}
+document.getElementById('startBtn').onclick=reset;document.getElementById('againBtn').onclick=reset;fit();draw();
+</script>
+</body>
+</html>
