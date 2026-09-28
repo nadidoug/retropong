@@ -1,32 +1,50 @@
 # Retro Glow Pong
 
-Current public build.
+A mobile-friendly HTML5 Canvas Pong game with an OLED-black background, neon visuals, progressive ball speed, and touch controls.
 
-## Play Live
+**Play live:** [nadidoug.github.io/retropong](https://nadidoug.github.io/retropong/)
 
-https://nadidoug.github.io/retropong/
+## Gameplay
 
-## Next Version (Orb Reactor Preview)
+- Move the left paddle with a mouse or vertical touch gesture.
+- Keep the ball in play against the CPU paddle.
+- Build longer rallies as the ball accelerates.
+- Track the score directly on the canvas.
 
-https://nadidoug.github.io/retropong/?v=orb-reactor-preview
+## Built with
 
-Planned changes:
-- one-player goalie survival
-- portrait and landscape phone play
-- score increases over time
-- chaos waves with extra balls
-- bounce shapes and power orbs
-- approved leaderboard flow
+- HTML5
+- CSS
+- Vanilla JavaScript
+- Canvas API
+- GitHub Pages
 
-## Gameplay Flow
+## Run locally
 
-1. Start game
-2. Survive as long as possible
-3. Build score
-4. Submit score
-5. Approved scores appear later
+No build step is required. Open `index.html` directly, or serve the repository with:
 
-## Files
+```bash
+npm start
+```
 
-- `index.html`
-- `leaderboard.json`
+## Testing
+
+The repository includes a manual browser and mobile smoke-test checklist in [docs/TESTING.md](docs/TESTING.md). The checklist covers canvas sizing, paddle controls, scoring, ball acceleration, mobile rotation, touch input, and console errors.
+
+## Project files
+
+- `index.html` — game interface and runtime.
+- `leaderboard.json` — leaderboard data placeholder.
+- `docs/TESTING.md` — browser and mobile test checklist.
+- `brand-kit/` — visual identity assets.
+- `pong-tournament-plugin/` — tournament-related extension work.
+
+## Planned iteration
+
+An Orb Reactor concept is in development with goalie survival, portrait and landscape play, score-over-time mechanics, multi-ball chaos waves, bounce objects, and power orbs.
+
+Preview route: [Orb Reactor preview](https://nadidoug.github.io/retropong/?v=orb-reactor-preview)
+
+## License
+
+Released under the [MIT License](LICENSE).
